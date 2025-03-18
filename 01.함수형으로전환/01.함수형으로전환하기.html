@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      /**
+       * addMaker
+       * 일급함수 특징 +  클로저 이용
+       */
+
+      function addMaker(a) {
+        return function (b) {
+          return a + b;
+        };
+      }
+
+      const add10 = addMaker(10);
+      console.log(add10(20));
+
+      // 함수형 프로그래밍 - 순수함수의 조합
+      function f4(f1, f2, f3) {
+        return f3(f1(), f2());
+      }
+
+      // console.log(
+      //   f4(
+      //     function () {
+      //       return 2;
+      //     },
+      //     function () {
+      //       return 1;
+      //     },
+      //     function (a) {
+      //       return a * a;
+      //     }
+      //   )
+      // );
+    </script>
+
+    <script src="01.each_filter_map.js"></script>
+    <script src="02.curry_get.js"></script>
+  </body>
+</html>

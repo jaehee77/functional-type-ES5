@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .wrapper {
+        display: block flow-root;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .before {
+        background: orange;
+        /* display: block;
+        margin-bottom: 20px; */
+      }
+      .middle {
+        background: lightblue;
+        /* display: inline;
+        padding-top: 10px; */
+
+        /* display: block;
+        margin-top: 20px; */
+      }
+      .after {
+        background: lightgreen;
+        /* display: inline-block; */
+        /* padding-top: 10px; */
+      }
+      .hover {
+        display: contents;
+      }
+      .hover:hover * {
+        opacity: 0.5;
+      }
+    </style>
+  </head>
+  <body>
+    <span>Test</span>
+    <div class="wrapper">
+      <div class="before">Before</div>
+      <div class="middle">Middle</div>
+      <div class="hover">
+        <div class="after">After</div>
+        <div class="before">Before</div>
+        <div class="middle">Middle</div>
+      </div>
+      <div class="after">After</div>
+    </div>
+  </body>
+</html>
