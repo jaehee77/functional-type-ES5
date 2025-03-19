@@ -260,3 +260,16 @@ console.log(doubledNumbers); // 출력: [2, 4, 6, 8, 10]
   });
 }
 ```
+
+<br>
+
+### ✅ `Set`을 배열로 변환
+
+```
+const set = new Set([1, 2, 3, 3, 4, 4]);
+const array = Array.from(set);
+console.log(array);
+// 출력: [1, 2, 3, 4]
+```
+
+> `Set`은 중복을 허용하지 않음 → `Array.from()`을 사용하면 중복 제거된 배열을 얻을 수 있음
