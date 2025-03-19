@@ -203,5 +203,29 @@ console.clear();
 /**
  * _pipe 만들기
  * -> 함수를 연속적으로 실행해 주는 함수
+ * 파이프라인은 들어온 함수들을 차례대로 연속적으로 실행할 준비가 된 함수를 리턴하는 함수
+ * 파이프라인은 결국 reduce인데, reduce보다 좀더 특화된 함수, 추상화된 함수임
+ * _pipe()는 결국 여러 개의 함수를 하나의 흐름으로 연결하는 역할을 함.
  */
 
+// prettier-ignore
+function _pipe() {
+  const fns = arguments; // 전달된 함수들을 저장
+  return function (arg) { // 초기값을 받는 내부 함수 반환
+    return _reduce(fns, function (arg, fn) {
+      // memo = iter(memo, 순회대상(값)), 여기서 순회대상은 함수임
+        return fn(arg);
+      }, arg );
+  };
+}
+
+const f1 = _pipe(
+  function (a) {
+    return a + 1;
+  }, // 1 + 1
+  function (b) {
+    return b * 2;
+  } // 2 * 2
+);
+
+log(f1(1));
