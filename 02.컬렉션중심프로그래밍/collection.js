@@ -81,3 +81,9 @@ log(
     return user.age > 30;
   })
 );
+
+// ================================================================
+// 2.2 compact : truthy값만 반환
+const _compact = _filter(_identify);
+
+log(_compact([1, 2, 0, false, null, [true]]));
