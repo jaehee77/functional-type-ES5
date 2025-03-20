@@ -211,24 +211,3 @@ function curry(fn) {
     )
   );
 }
-
-/**
- * _reduce 만들기
- * 원래 들어온 자료와 다른 축약된 새로운 자료를 만들때 사용
- */
-
-// function _reduce( [1,2,3], iter, memo) {
-//   return iter(iter(iter(0,1),2),3)
-// }
-
-// _reduce([1,2,3], add, memo);
-
-// 단계
-/*
-memo = add(0, 1);
-memo = add(memo, 2);
-memo = add(memo, 3);
-return memo;
-// 결과적으로 재귀적 함수임
-add(add(add(0,1),2),3)
-*/

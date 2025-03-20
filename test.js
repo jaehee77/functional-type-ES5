@@ -28,9 +28,28 @@ const users = [
   log(user);
 }
 // ======================================================================
+
+const _get = _curryr(function (obj, key) {
+  return obj === null ? undefined : obj[key];
+});
+
+const user2 = users[2];
+log(_get(user2, 'name'));
+log(_get('name')(user2));
+
+const get_name = _get('name');
+log(_get('name'));
+log(get_name(users[2]));
+log(get_name(users[1]));
+
+// ======================================================================
+
+const _length = _get('length');
+
 function _each(list, iter) {
-  for (let i = 0; i < list.length; i++) {
-    iter(list[i]);
+  const keys = _keys(list);
+  for (let i = 0, len = keys.length; i < len; i++) {
+    iter(list[keys[i]]);
   }
   return list;
 }
@@ -83,19 +102,23 @@ log(
 
 // ======================================================================
 
-const _curry = (fn) => {
+function _curry(fn) {
   return function (a, b) {
     return arguments.length === 2 ? fn(a, b) : (b) => fn(a, b);
   };
-};
+}
 
 // ======================================================================
 
-const _curryr = (fn) => {
+function _curryr(fn) {
   return function (a, b) {
     return arguments.length === 2 ? fn(a, b) : (b) => fn(b, a);
   };
-};
+}
+
+// ### filter, map 에 curryr 적용
+_filter = _curryr(_filter);
+_map = _curryr(_map);
 
 // ======================================================================
 
@@ -117,21 +140,6 @@ const sub10 = sub(10);
 log(sub10(20));
 log(sub(10)(20));
 log(sub(20, 10));
-
-// ======================================================================
-
-const _get = _curryr(function (obj, key) {
-  return obj === null ? undefined : obj[key];
-});
-
-const user2 = users[2];
-log(_get(user2, 'name'));
-log(_get('name')(user2));
-
-const get_name = _get('name');
-log(_get('name'));
-log(get_name(users[2]));
-log(get_name(users[1]));
 
 // ======================================================================
 console.clear();
@@ -184,9 +192,11 @@ function _reduce(list, iter, memo) {
     memo = list[0];
     list = rest(list);
   }
+
   _each(list, function (val) {
     memo = iter(memo, val);
   });
+
   return memo;
 }
 
@@ -210,22 +220,183 @@ console.clear();
 
 // prettier-ignore
 function _pipe() {
-  const fns = arguments; // 전달된 함수들을 저장
+  const fns = arguments; // 전달된 함수들을 저장 유사배열 객체
+  // fns = {
+  //   0: function (a) { return a + 1; },
+  //   1: function (b) { return b * 2; },
+  //   length: 2
+  // }
+  
   return function (arg) { // 초기값을 받는 내부 함수 반환
-    return _reduce(fns, function (arg, fn) {
+    return _reduce(fns, function (arg, fn) { // fns(arraylike 객체)
       // memo = iter(memo, 순회대상(값)), 여기서 순회대상은 함수임
+      // iter(1, fn1); => function (arg, fn) => function(1, fn1)
+      // => memo에 fn(1) 이 값 담김
+      // iter(memo, val) 가 function (arg, fn){} 이 함수니까 여기에 리턴값이 있어야 memo에 담김
+      // 왜? iter 함수실행하고 리턴값 없으면 undefined 가 반환되니까.
+      // 즉, 아래 코드와 같음. return fn1(1)
         return fn(arg);
       }, arg );
   };
 }
 
+// 파이프는 함수를 리턴하는 함수
+// prettier-ignore
 const f1 = _pipe(
-  function (a) {
-    return a + 1;
-  }, // 1 + 1
-  function (b) {
-    return b * 2;
-  } // 2 * 2
+  function (a) { return a + 1; }, // 1 + 1
+  function (b) { return b * 2; } // 2 * 2
 );
 
 log(f1(1));
+
+/*
+_reduce([fn1, fn2], function (arg, fn) {
+  return fn(arg);
+}, 1);
+1. 첫 번째 순회
+memo = fn1(1); // 1 + 1 = 2
+2. 두 번째 순회
+memo = fn2(2); // 2 * 2 = 4
+*/
+
+// ======================================================================
+
+/**
+ * _go
+ * 파이프 함수이면서 즉시 실행되는 파이프 함수이다.
+ * (pipe는 함수만 리턴하고 나중에 실행함)
+ * go는 첫 번째 인자로 값을 받고 두 번째 인자부터 함수를 받아서 결과를 실행
+ */
+
+// prettier-ignore
+function _go(initValue) {
+  const fns = rest(arguments);
+  return _pipe.apply(null, fns)(initValue)
+}
+
+// prettier-ignore
+_go(
+  1,
+  function (a) { return a + 1; }, 
+  function (a) { return a * 2; }, 
+  function (a) { return a * a; }, 
+  console.log
+);
+
+log(
+  _map(
+    _filter(users, (user) => user.age >= 30),
+    _get('name')
+  )
+);
+
+// prettier-ignore
+_go(
+  users,
+  function(users) {
+    return _filter(users, function(user) {
+      return user.age >= 30
+    })
+  },
+  function(users) {
+    return _map(users, _get('name'))
+  },
+  console.log
+);
+
+// curryr 적용
+// prettier-ignore
+log(
+  _map([1,2,3], function(item) { return item * 2})
+)
+
+// prettier-ignore
+log(
+  _map(function(item) {return item * 2})([1,2,3])
+)
+
+// prettier-ignore
+// curryr이 적용된 filter, map을 사용
+_go(
+  users,
+  _filter(function(user) { return user.age >= 30 }),
+  _map(_get('name')),
+  console.log
+);
+// 더 간결하게 작성
+_go(
+  users,
+  _filter((user) => user.age >= 30),
+  _map(_get('name')),
+  log
+);
+
+// ======================================================================
+
+_each(null, console.log);
+
+// ======================================================================
+
+//
+/**
+ * _keys 만들기
+ */
+log(Object.keys({ name: 'jaehee', age: 33 }));
+log(Object.keys([1, 2, 5, 6]));
+log(Object.keys(10));
+
+// null 은 에러가 남
+// log(Object.keys(null));
+
+function _is_object(obj) {
+  return typeof obj === 'object' && !!obj;
+}
+
+function _keys(obj) {
+  return _is_object(obj) ? Object.keys(obj) : [];
+}
+
+log(_keys({ name: 'jaehee', age: 33 }));
+log(_keys([1, 2, 5, 6]));
+log(_keys(10));
+log(_keys(null));
+log(
+  _keys({
+    13: 'AB',
+    19: 'CD',
+    23: 'EF',
+  })
+);
+
+_each(
+  {
+    13: 'AB',
+    19: 'CD',
+    23: 'EF',
+  },
+  function (name) {
+    log(name);
+  }
+);
+
+log(
+  _map(
+    {
+      13: 'AB',
+      19: 'CD',
+      23: 'EF',
+    },
+    function (name) {
+      return name.toLowerCase();
+    }
+  )
+);
+
+// prettier-ignore
+_go(
+  users,
+  _map(user => user.name),
+  _map(name => name.toLowerCase()),
+  console.log
+)
+console.clear();
