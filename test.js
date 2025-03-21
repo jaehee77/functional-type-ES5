@@ -1,6 +1,7 @@
 const log = console.log;
 
 const users = [
+  { id: 0, name: 'KF', age: 15 },
   { id: 1, name: 'ID', age: 32 },
   { id: 2, name: 'HA', age: 25 },
   { id: 3, name: 'BJ', age: 30 },
@@ -9,6 +10,7 @@ const users = [
   { id: 6, name: 'JM', age: 35 },
   { id: 7, name: 'HI', age: 24 },
   { id: 8, name: 'MP', age: 23 },
+  { id: 9, name: 'SP', age: 30 },
 ];
 // ======================================================================
 {
