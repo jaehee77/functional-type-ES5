@@ -160,8 +160,12 @@ log(
 // 3.4 every : 모두 만족하는가?
 
 function _every(data, predi) {
+  // false를 찾는 동작
   return _find_index(data, _negate(predi)) === -1;
 }
+// _find_index로 **"조건을 만족하지 않는 첫 번째 요소"**를 찾는다.
+// _find_index는 true를 반환하는 첫 번째 요소를 찾으므로,
+// _negate를 사용하여 **"조건을 만족하지 않는 요소"**를 찾아야 한다.
 
 log(
   _every([12, 24, 5, 10, 20], function (val) {

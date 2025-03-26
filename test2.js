@@ -3,7 +3,7 @@ const log = console.log;
 const users = [
   { id: 0, name: 'KF', age: 15 },
   { id: 1, name: 'ID', age: 32 },
-  { id: 2, name: 'HA', age: 25 },
+  { id: 2, name: 'HA', age: 24 },
   { id: 3, name: 'BJ', age: 30 },
   { id: 4, name: 'PJ', age: 28 },
   { id: 5, name: 'JE', age: 27 },
@@ -46,8 +46,8 @@ function _keys(obj) {
 function _map(list, mapper) {
   const new_list = [];
 
-  _each(list, function (val) {
-    new_list.push(mapper(val));
+  _each(list, function (val, key) {
+    new_list.push(mapper(val, key));
   });
 
   return new_list;
@@ -69,7 +69,7 @@ function _filter(list, predi) {
 function _each(list, iter) {
   const keys = _keys(list);
   for (let i = 0, len = keys.length; i < len; i++) {
-    iter(list[keys[i]]);
+    iter(list[keys[i]], keys[i]);
   }
   return list;
 }
@@ -260,11 +260,12 @@ function _reject(data, predi) {
 function _reject(data, predi) {
   return _filter(data, _negate(predi));
 }
+_reject = _curryr(_reject);
 
 // log(
 //   _reject(users, function (user) {
 //     return user.age >= 30;
-//   })
+//   })0
 // );
 
 // function _compact(data) {
@@ -275,4 +276,192 @@ function _reject(data, predi) {
 
 var _compact = _filter(_identify);
 
-log(_compact([1, 2, 0, false, null, {}]));
+// log(_compact([1, 2, 0, false, null, {}]));
+
+function _find(list, predi) {
+  const keys = _keys(list);
+  for (let i = 0, len = keys.length; i < len; i++) {
+    const val = list[keys[i]];
+    if (predi(val)) {
+      return (list = val);
+    }
+  }
+}
+_find = _curryr(_find);
+
+// log(_find(users, (user) => user.age > 30));
+
+function _find_index(list, predi) {
+  const keys = _keys(list);
+  for (let i = 0, len = keys.length; i < len; i++) {
+    if (predi(list[keys[i]])) return i;
+  }
+  return -1;
+}
+
+_find_index = _curryr(_find_index);
+
+// log(_find_index(users, (user) => user.name === 'JE'));
+
+// log(
+//   _get(
+//     _find(users, (user) => user.age > 30),
+//     'age'
+//   )
+// );
+
+function _some(data, predi) {
+  return _find_index(data, predi || _identify) !== -1;
+}
+
+// log(
+//   _some([1, 2, 5, 10, 20], function (val) {
+//     return val > 10;
+//   })
+// );
+
+function _every(data, predi) {
+  return _find_index(data, _negate(predi || _identify)) === -1;
+}
+
+// log(
+//   _every([12, 24, 5, 10, 20], function (val) {
+//     return val > 3;
+//   })
+// ); // true (모든 값이 3보다 크다)
+
+// log(_some([null, undefined, 1]));
+
+// log(_every([1, 4, 3]));
+
+function _min(data) {
+  return _reduce(data, function (a, b) {
+    return a < b ? a : b;
+  });
+}
+
+// log(_min([1, 2, 4, 10, 5, -4]));
+
+function _max(data) {
+  return _reduce(data, function (a, b) {
+    return a > b ? a : b;
+  });
+}
+
+// log(_max([1, 2, 4, 10, 5, -4]));
+
+function _min_by(data, iter) {
+  return _reduce(data, function (a, b) {
+    return iter(a) < iter(b) ? a : b;
+  });
+}
+
+// log(_min_by([1, 2, 4, 10, 5, -4], Math.abs));
+
+function _max_by(data, iter) {
+  return _reduce(data, function (a, b) {
+    return iter(a) > iter(b) ? a : b;
+  });
+}
+
+_min_by = _curryr(_min_by);
+_max_by = _curryr(_max_by);
+
+// log(_max_by([1, 2, 4, 10, 5, -11], Math.abs));
+
+// _go(
+//   users,
+//   _filter((user) => user.age >= 30),
+//   _min_by((user) => user.age),
+//   log
+// );
+
+function _push(obj, key, val) {
+  (obj[key] = obj[key] || []).push(val);
+  return obj;
+}
+
+function _group_by(data, iter) {
+  return _reduce(
+    data,
+    function (grouped, val) {
+      return _push(grouped, iter(val), val);
+    },
+    {}
+  );
+}
+
+_group_by = _curryr(_group_by);
+
+// _go(
+//   users,
+//   _group_by((user) => user.age - (user.age % 10)),
+//   log
+// );
+
+// log(_group_by(users, (user) => user.age));
+
+function _inc(count, key) {
+  count[key] ? count[key]++ : (count[key] = 1);
+
+  return count;
+}
+
+function _count_by(data, iter) {
+  return _reduce(
+    data,
+    function (count, val) {
+      return _inc(count, iter(val));
+    },
+    {}
+  );
+}
+
+_count_by = _curryr(_count_by);
+
+// log(_count_by(users, (user) => user.age));
+
+// log(_count_by(users, (user) => user.age - (user.age % 10)));
+
+// _map([1, 2, 4], console.log);
+// _map(users[0], console.log);
+
+// _map(users[0], function (val, key) {
+//   log(val, key);
+// });
+
+// log(
+//   _map(users[0], function (val, key) {
+//     return [key, val];
+//   })
+// );
+
+const pairs = _map((val, key) => [key, val]);
+
+// log(pairs(users[0]));
+
+// const _document_write = document.write.bind(document);
+
+// _go(
+//   users,
+//   _count_by((user) => user.age - (user.age % 10)),
+//   _map((count, key) => `<li>${key}대는 ${count}명 입니다.</li>`),
+//   (list) => '<ul>' + list.join('') + '</ul>',
+//   function (html) {
+//     document.write(html);
+//   }
+// );
+// _go(
+//   users,
+//   _count_by((user) => user.age - (user.age % 10)),
+//   _map((count, key) => `<li>${key}대는 ${count}명 입니다.</li>`),
+//   (list) => '<ul>' + list.join('') + '</ul>',
+//   _document_write
+// );
+
+const _ = {};
+_.go = function () {
+  return 1;
+};
+
+log(_.go());
